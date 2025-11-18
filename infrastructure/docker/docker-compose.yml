@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: enterprise_vpn
+      POSTGRES_USER: vpn_user
+      POSTGRES_PASSWORD: vpn_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vpn_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://vpn_user:vpn_pass@postgres:5432/enterprise_vpn
+      REDIS_URL: redis://redis:6379/0
+      AD_SERVER: ${AD_SERVER:-ldap://ad.example.com:389}
+      AD_BASE_DN: ${AD_BASE_DN:-dc=example,dc=com}
+      AD_BIND_USER: ${AD_BIND_USER}
+      AD_BIND_PASSWORD: ${AD_BIND_PASSWORD}
+      RADIUS_SECRET: ${RADIUS_SECRET}
+      RADIUS_SERVER: ${RADIUS_SERVER}
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change_this_key}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+    ports:
+      - "8000:8000"
+      - "51820:51820/udp"
+    volumes:
+      - /etc/wireguard:/etc/wireguard
+      - ./logs:/var/log/vpn
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    privileged: true
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+

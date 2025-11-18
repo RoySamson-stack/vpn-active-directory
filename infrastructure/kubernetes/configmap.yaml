@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpn-config
+  namespace: enterprise-vpn
+data:
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  VPN_WIREGUARD_PORT: "51820"
+  VPN_IPSEC_ENABLED: "true"
+  VPN_MULTI_HOP_ENABLED: "true"
+  VPN_MAX_HOPS: "4"
+  LOG_LEVEL: "INFO"
+  PROMETHEUS_ENABLED: "true"
+

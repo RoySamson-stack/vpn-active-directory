@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpn-api
+  namespace: enterprise-vpn
+  labels:
+    app: vpn-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vpn-api
+  template:
+    metadata:
+      labels:
+        app: vpn-api
+    spec:
+      containers:
+      - name: api
+        image: enterprise-vpn:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 51820
+          name: wireguard
+          protocol: UDP
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: vpn-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: vpn-secrets
+              key: REDIS_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: vpn-secrets
+              key: JWT_SECRET
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vpn-secrets
+              key: ENCRYPTION_KEY
+        envFrom:
+        - configMapRef:
+            name: vpn-config
+        volumeMounts:
+        - name: wireguard-config
+          mountPath: /etc/wireguard
+        - name: logs
+          mountPath: /var/log/vpn
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+          privileged: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: wireguard-config
+        hostPath:
+          path: /etc/wireguard
+          type: DirectoryOrCreate
+      - name: logs
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vpn-api
+  namespace: enterprise-vpn
+spec:
+  selector:
+    app: vpn-api
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  - name: wireguard
+    port: 51820
+    targetPort: 51820
+    protocol: UDP
+  type: LoadBalancer
+
