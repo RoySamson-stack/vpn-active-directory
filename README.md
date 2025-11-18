@@ -2,7 +2,7 @@
 
 A robust, enterprise-grade VPN platform designed for authorized penetration testing engagements with Active Directory integration, multi-hop routing, and advanced privacy features.
 
-## 🚀 Features
+##  Features
 
 - **WireGuard & IPsec Support**: High-performance VPN protocols with automatic failover
 - **Active Directory Integration**: Seamless LDAP/RADIUS authentication with MFA
@@ -15,7 +15,7 @@ A robust, enterprise-grade VPN platform designed for authorized penetration test
 - **RESTful API**: Complete API for automation and integration
 - **Kubernetes Ready**: Production-ready container orchestration
 
-## 📋 Requirements
+##  Requirements
 
 - Kubernetes cluster (1.24+)
 - Active Directory / LDAP server
@@ -24,7 +24,7 @@ A robust, enterprise-grade VPN platform designed for authorized penetration test
 - Minimum 4GB RAM, 2 CPU cores per node
 - Docker and kubectl installed
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
@@ -46,7 +46,7 @@ A robust, enterprise-grade VPN platform designed for authorized penetration test
 └──────────────┘   └──────────────┘   └──────────────┘
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -76,14 +76,14 @@ kubectl apply -f infrastructure/kubernetes/
 kubectl get pods -n enterprise-vpn
 ```
 
-## 📚 Documentation
+##  Documentation
 
 - [Architecture Overview](docs/architecture/README.md)
 - [API Documentation](docs/api/README.md)
 - [Deployment Guide](docs/deployment/README.md)
 - [Requirements](docs/enterprise-vpn-requirements.md)
 
-## 🔒 Security
+##  Security
 
 - End-to-end encryption (ChaCha20Poly1305)
 - Ephemeral key generation per session
@@ -91,22 +91,22 @@ kubectl get pods -n enterprise-vpn
 - Secure boot and disk encryption
 - Regular security audits
 
-## 📊 Monitoring
+##  Monitoring
 
 - Prometheus metrics
 - Grafana dashboards
 - ELK stack for logging
 - Real-time alerting
 
-## 🤝 Contributing
+##  Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## 📄 License
+##  License
 
 Proprietary - All rights reserved
 
-## 🆘 Support
+##  Support
 
 For issues and questions, please open an issue or contact support.
 
